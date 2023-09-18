@@ -13,6 +13,6 @@ NUM_POINTS_Y = 100
 
 PLOT_POINTS = 1000
 
-EPSILON = 1000  # <-HERE W CHANGE THE epsilon (=0.1 is working, =0.01 is not working)
+EPSILON = 0.1  # <-HERE W CHANGE THE epsilon (=0.1 is working, =0.01 is not working)
 
-NUMBER_EPOCHS = 1000
+NUMBER_EPOCHS = 10000
