@@ -6,6 +6,8 @@ import sys
 from functools import partial
 
 import matplotlib.pyplot as plt
+from src.boundary_points import get_boundary_points
+from src.eriksson_johnson_loss_function import Loss
 import torch
 from matplotlib import rc
 from src.exact import exact_solution
@@ -19,13 +21,18 @@ rc("animation", html="html5")
 
 pinn = torch.load("results/pinn.pt")
 convergence_data = torch.load("results/convergence_data.pt")
+x_around, y_around, x_left, y_left = get_boundary_points(X_INI, X_FIN, Y_INI, Y_FIN, NUM_POINTS_X, NUM_POINTS_Y, DEVICE)
+
 
 # Plot the solution in a "dense" mesh
 n_x = torch.linspace(X_INI, X_FIN, steps=PLOT_POINTS)
 n_y = torch.linspace(Y_INI, Y_FIN, steps=PLOT_POINTS)
 n_x, n_y = torch.meshgrid(n_x, n_y)
-n_x_reshaped = n_x.reshape(-1, 1)
-n_y_reshaped = n_y.reshape(-1, 1)
+n_x_reshaped = n_x.reshape(-1, 1).requires_grad_(True)
+n_y_reshaped = n_y.reshape(-1, 1).requires_grad_(True)
+
+loss_fn = Loss(n_x_reshaped, n_x_reshaped, x_around, y_around, x_left, y_left, EPSILON)
+interior_loss = loss_fn.f_inter_loss(n_x_reshaped, n_y_reshaped, pinn, EPSILON).reshape(PLOT_POINTS, PLOT_POINTS)
 
 z = f(pinn, n_x_reshaped, n_y_reshaped).detach().reshape(PLOT_POINTS, PLOT_POINTS)
 fig, ax = plt.subplots()
@@ -55,6 +62,15 @@ ax.set_xlabel("x")
 ax.set_ylabel("y")
 fig.colorbar(c, ax=ax)
 fig.savefig(f"results/difference")
+
+# Interior loss
+fig, ax = plt.subplots()
+c = ax.pcolor(n_x, n_y, interior_loss.detach())
+ax.set_title("Interior loss")
+ax.set_xlabel("x")
+ax.set_ylabel("y")
+fig.colorbar(c, ax=ax)
+fig.savefig(f"results/interior_loss")
 
 # Initial solution
 n_y = torch.linspace(Y_INI, Y_FIN, steps=PLOT_POINTS)

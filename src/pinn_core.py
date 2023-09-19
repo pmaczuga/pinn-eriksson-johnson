@@ -61,13 +61,14 @@ def train_model(
     loss_fn: Callable,
     learning_rate: float = 0.01,
     max_epochs: int = 1_000,
+    interior_multiplier: float = 1.0
 ) -> torch.Tensor:
     optimizer = torch.optim.Adam(pinn.parameters(), lr=learning_rate)
 
     convergence_data = torch.empty((max_epochs))
 
     for epoch in range(max_epochs):
-        loss = loss_fn(pinn)
+        loss = loss_fn(pinn, interior_multiplier)
         optimizer.zero_grad()
         loss.backward(retain_graph=True)
         optimizer.step()
