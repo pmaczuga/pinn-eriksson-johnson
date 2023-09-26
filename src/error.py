@@ -43,11 +43,11 @@ def H1_error(pinn, exact, epsilon):
         return (dx + dy).detach().reshape(-1)
 
     up1  = lambda y, x: (pinn_np(y, x) - exact_np(y, x))**2
-    up2  = lambda y, x: (pinn_grad_np(y, x) - exact_np(y, x))**2
-    dwon = lambda y, x: exact_np(y, x)**2
+    up2  = lambda y, x: (pinn_grad_np(y, x) - exact_grad_np(y, x))**2
+    down = lambda y, x: exact_np(y, x)**2
 
     up1_int  = dblquad(up1, 0, 1, 0, 1)[0]
-    up2_int  = dblquad(up1, 0, 1, 0, 1)[0]
-    down_int = dblquad(dwon, 0, 1, 0, 1)[0]
+    up2_int  = dblquad(up2, 0, 1, 0, 1)[0]
+    down_int = dblquad(down, 0, 1, 0, 1)[0]
 
     return math.sqrt(up1_int + up2_int / down_int)
